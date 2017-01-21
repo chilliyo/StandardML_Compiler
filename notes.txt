@@ -1,0 +1,22 @@
+Qili Sui
+CSC 348 - Winter 2017
+Notes about the Final Project
+
+1. What I installed?
+   
+   - I installed Poly/ML which is a Standard ML implementation written in Poly.
+
+   - This is its offical website: http://www.polyml.org/
+   
+   - Poly/ML's Latest news development Version on Github: https://github.com/polyml
+    
+2. How I did it?
+   
+   I installed Poly/ML on my machine(OS X) using homebrew(http://brew.sh/):
+     
+     $ brew install polyml
+   
+   Note: Homebrew will also build it for you.
+   
+
+
