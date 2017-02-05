@@ -18,5 +18,9 @@ Notes about the Final Project
    
    Note: Homebrew will also build it for you.
    
+3. Documentation for the syntax/grammar of Standard ML
+   
+   The Definition of Standard ML
+   http://sml-family.org/sml97-defn.pdf
 
 

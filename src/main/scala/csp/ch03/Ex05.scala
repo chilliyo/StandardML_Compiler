@@ -9,7 +9,7 @@ object Ex05 {
     val digits : Parser[Int] = P (CharIn ('0' to '9').rep (1).!).map (s => s.toInt)
     val integer : Parser[Expr] = digits.map (n => CstI (n))
 
-    val keywords : List[String] = List ("let", "in", "end")
+    val keywords : List[String] = List ("let", "in", "end", "if", "then", "else", "fi")
     val alpha : Parser[String] = P ((CharIn ('A' to 'Z') | CharIn ('a' to 'z')).!)
     val ident : Parser[String] = P ((alpha ~ (alpha | CharIn ('0' to '9')).rep (0)).!).filter (s => !keywords.contains (s))
     val variable : Parser[Expr] = ident.map (s => Var (s))
@@ -30,7 +30,10 @@ object Ex05 {
     val parens : Parser[Expr] = P (atom | ("(" ~ addSub ~ ")") | ("let" ~ ident ~ "=" ~ addSub ~ "in" ~ addSub ~ "end").map { case (x, erhs, ebody) => Let (x, erhs, ebody) })
     val mult : Parser[Expr] = P (parens ~ ("*".! ~ parens).rep.map (s => s.toList)).map (foldAssocLeft)
     val addSub : Parser[Expr] = P (mult ~ (("+" | "-").! ~ mult).rep.map (s => s.toList)).map (foldAssocLeft)
-    val start : Parser[Expr] = P (addSub ~ End)
+    val condition: Parser[Expr] = P ( ("if" ~ (atom | addSub ) ~ "then" ~ (atom | addSub) ~ "else" ~ (atom | addSub) ~ "fi").map { case (e1, e2, e3) => If (e1, e2, e3) })
+    val start : Parser[Expr] = P (condition ~ End)
+    
+
   }
 
   sealed trait Expr
@@ -38,6 +41,7 @@ object Ex05 {
   case class Var (nm : String)                        extends Expr
   case class Let (nm : String, e1 : Expr, e2 : Expr)  extends Expr
   case class Prim (nm : String, e1 : Expr, e2 : Expr) extends Expr
+  case class If(e1:Expr, e2:Expr, e3:Expr)            extends Expr
 
   def lookup (env : List[(String, Int)], x : String) : Int = {
     env match {
@@ -58,7 +62,10 @@ object Ex05 {
       case Prim ("+", e1, e2) => eval (e1, env) + eval (e2, env)
       case Prim ("*", e1, e2) => eval (e1, env) * eval (e2, env)
       case Prim ("-", e1, e2) => eval (e1, env) - eval (e2, env)
+      case If (e1, e2, e3)  => if (eval (e1,env) != 0)  eval(e2,env)
+                  else eval (e3,env)
       case Prim (  _,  _,  _) => throw new RuntimeException ("unknown primitive")
+
     }
   }
 
@@ -68,6 +75,7 @@ object Ex05 {
       case Var (x)              => x
       case Let (x, erhs, ebody) => "(let %s = %s in %s)".format (x, pp (erhs), pp (ebody))
       case Prim (op, e1, e2)    => "(%s %s %s)".format (pp (e1), op, pp (e2))
+      case If(e1, e2, e3)       => "(if %s then %s else %s fi)".format (pp(e1), pp(e2), pp(e3))
     }
   }
 
@@ -101,15 +109,19 @@ object Ex05 {
   def main (args : Array[String]) {
     println ("=" * 80)
 
+    //Exercise 3.5
     val p01 : Parser[Expr] = MyParsers.start
-    testEval (p01, "5")
-    testEval (p01, "x")
-    testEval (p01, "let x = 1 in 2 end")
-    testEval (p01, "let x = 1 + 2 in x * 2 end")
-    testEval (p01, "(let x = 1 + 2 in x * x end) * 2")
-    testEval (p01, "let x = 1 in 2 + let y = 3 in 4 end end")
-    testEval (p01, "let x = 1 + 2 in let y = x + 2 in x * x * 2 end end")
-    testEval (p01, "(let x = 1 + 2 in x * 2 end) + (let x = let y = 2 in y * y end in x * x end)")
+    testEval (p01, "1 + 2 * 3")
+    testEval (p01, "1 - 2 - 3")
+    testEval (p01, "1 + -2")
+    testEval (p01, "x++")
+    testEval (p01, "1 + 1.2")
+    testEval (p01, "1 + ")
+    testEval (p01, "let z = (17) in z + 2 * 3 end")
+    testEval (p01, "let z = 17) in z + 2 * 3 end")
+    testEval (p01, "let in = (17) in z + 2 * 3 end")
+    testEval (p01, "1 + let x=5 in let y=7+x in y+y end + x end")
+    testEval (p01, "if 2*5 then 3*4 else 1*1 fi")
     println ("=" * 80)
   }
 }
