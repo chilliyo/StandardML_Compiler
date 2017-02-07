@@ -9,16 +9,17 @@ object Project {
     val digits : Parser[Int] = P (CharIn ('0' to '9').rep (1).!).map (s => s.toInt)
     val integer : Parser[Expr] = digits.map (n => CstI (n))
 
-    val keywords : List[String] = List ("let", "in", "end")
+    val keywords : List[String] = List ("let", "in", "end", "val")
     val alpha : Parser[String] = P ((CharIn ('A' to 'Z') | CharIn ('a' to 'z')).!)
     val ident : Parser[String] = P ((alpha ~ (alpha | CharIn ('0' to '9')).rep (0)).!).filter (s => !keywords.contains (s))
     val variable : Parser[Expr] = ident.map (s => Var (s))
+    
   }
 
   object MyParsers {
     val White = fastparse.WhitespaceApi.Wrapper {
       import fastparse.all._
-      NoTrace (" ".rep)
+      NoTrace ((" " | "\n").rep)
     }
 
     import fastparse.noApi._
@@ -26,9 +27,29 @@ object Project {
 
     import MyParsersNoWhitespace._
 
-    val putYourStuffHere : Parser[Unit] = P ("do some stuff here")
+    val atom : Parser[Unit] = P (integer.map(s => ()) | variable.map(s => ()))
 
-    val start : Parser[Unit] = P (putYourStuffHere ~ End)
+    val assignStatment: Parser[Unit] = P(ident.map(s =>()) ~ ":=" ~ integer.map (n => ()) ~ ";")
+
+    val assignStatments: Parser[Unit] = P(assignStatment.rep)
+
+    val whileStatment: P[Unit] = 
+      P ("while" ~ "(" ~ ident.map(s=> ()) ~ ")" ~ "do" ~ "(" ~ assignStatments ~ ")" ~ ";")
+
+    val statments: P[Unit] = 
+      P (
+        assignStatment |
+        whileStatment
+        )
+
+    val parameter : P[Unit] = P (ident.map(s => ()))
+
+    val parameters: P[Unit] = P ( (parameter ~ ",").rep ~ parameter)
+
+    val functionDec : P[Unit] = 
+      P ("fun" ~ ident.map(s => ()) ~ "(" ~ parameters ~ ")" ~ "=" ~ "(" ~ statments ~ ")")
+
+    val start : Parser[Unit] = P (functionDec ~ End)
   }
 
   sealed trait Expr
@@ -36,6 +57,33 @@ object Project {
   case class Var (nm : String)                        extends Expr
   case class Let (nm : String, e1 : Expr, e2 : Expr)  extends Expr
   case class Prim (nm : String, e1 : Expr, e2 : Expr) extends Expr
+  case class If(e1:Expr, e2:Expr, e3:Expr)            extends Expr
+
+  def lookup (env : List[(String, Int)], x : String) : Int = {
+    env match {
+      case Nil         => throw new RuntimeException (x + " not found")
+      case (y, v) :: r => if (x == y) v else lookup (r, x)
+    }
+  }
+
+  def eval (e : Expr, env : List[(String, Int)]) : Int = {
+    e match {
+      case CstI (i)           => i
+      case Var (x)            => lookup (env, x)
+      case Let (x, erhs, ebody) => {
+        val xval : Int = eval (erhs, env)
+        val env1 : List[(String, Int)] = (x, xval) :: env 
+        eval (ebody, env1)
+      }
+      case Prim ("+", e1, e2) => eval (e1, env) + eval (e2, env)
+      case Prim ("*", e1, e2) => eval (e1, env) * eval (e2, env)
+      case Prim ("-", e1, e2) => eval (e1, env) - eval (e2, env)
+      case If (e1, e2, e3)  => if (eval (e1,env) != 0)  eval(e2,env)
+                  else eval (e3,env)
+      case Prim (  _,  _,  _) => throw new RuntimeException ("unknown primitive")
+
+    }
+  }
 
   def foldAssocLeft (p : (Expr, List[(String,Expr)])) : Expr = {
     p match {
@@ -62,7 +110,13 @@ object Project {
     println ("=" * 80)
 
     val p01 : Parser[Unit] = MyParsers.start
-    test (p01, "do some stuff here")
+    //test (MyParsers.statment, "x = 5;")
+    //test (MyParsers.atom, "a")
+    //test (p01, "fun double(x) = x;")
+    test (p01, "fun max(q) = (q:= 0;)")
+    test (p01, "fun double(x,y,z) = (x := 2;)")
+    test (p01, "fun foo(a,b) = (while (x) do (a := 9; b := 100;);)")
+
     println ("=" * 80)
   }
 }

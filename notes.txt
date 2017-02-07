@@ -20,7 +20,16 @@ Notes about the Final Project
    
 3. Documentation for the syntax/grammar of Standard ML
    
-   The Definition of Standard ML
-   http://sml-family.org/sml97-defn.pdf
+   (1)The Definition of Standard ML
+      http://sml-family.org/sml97-defn.pdf
 
+   (2)SML Basics from a Cornell University Course Lecture Site
+      http://www.cs.cornell.edu/courses/cs312/2004fa/lectures/lecture2.htm
 
+   (3)Functions in SML
+      http://www3.cs.stonybrook.edu/~leo/CSE215/cse215FctProgramming.pdf
+      https://turing.cs.hbg.psu.edu/comp416/lectures/slides03-before.pdf
+      
+   (4)CrashCourse of SML
+      https://www.cs.bu.edu/~hwxi/academic/courses/CS520/Fall02/notes/SMLintro.pdf
+      

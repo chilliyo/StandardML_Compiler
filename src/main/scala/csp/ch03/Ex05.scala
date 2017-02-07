@@ -27,11 +27,13 @@ object Ex05 {
     import MyParsersNoWhitespace._
 
     val atom : Parser[Expr] = P (integer | variable)
-    val parens : Parser[Expr] = P (atom | ("(" ~ addSub ~ ")") | ("let" ~ ident ~ "=" ~ addSub ~ "in" ~ addSub ~ "end").map { case (x, erhs, ebody) => Let (x, erhs, ebody) })
+    val condition: Parser[Expr] = P ( ("if" ~ addSub ~ "then" ~ addSub ~ "else" ~ addSub ~ "fi").map { case (e1, e2, e3) => If (e1, e2, e3) } )
+    val parens : Parser[Expr] = P (atom | ("(" ~ addSub ~ ")") 
+                                        | ("let" ~ ident ~ "=" ~ addSub ~ "in" ~ addSub ~ "end").map { case (x, erhs, ebody) => Let (x, erhs, ebody) }
+                                        | condition)
     val mult : Parser[Expr] = P (parens ~ ("*".! ~ parens).rep.map (s => s.toList)).map (foldAssocLeft)
     val addSub : Parser[Expr] = P (mult ~ (("+" | "-").! ~ mult).rep.map (s => s.toList)).map (foldAssocLeft)
-    val condition: Parser[Expr] = P ( ("if" ~ (atom | addSub ) ~ "then" ~ (atom | addSub) ~ "else" ~ (atom | addSub) ~ "fi").map { case (e1, e2, e3) => If (e1, e2, e3) })
-    val start : Parser[Expr] = P (condition ~ End)
+    val start : Parser[Expr] = P (addSub ~ End)
     
 
   }
@@ -121,7 +123,9 @@ object Ex05 {
     testEval (p01, "let z = 17) in z + 2 * 3 end")
     testEval (p01, "let in = (17) in z + 2 * 3 end")
     testEval (p01, "1 + let x=5 in let y=7+x in y+y end + x end")
-    testEval (p01, "if 2*5 then 3*4 else 1*1 fi")
+    testEval (p01, "if 4 then 2 else 7 fi")
+    testEval (p01, "if 1+4*8 then 2*5 else 7+1 fi")
+    testEval (p01, "if 15 then 1-2*5 else 8 fi")
     println ("=" * 80)
   }
 }
