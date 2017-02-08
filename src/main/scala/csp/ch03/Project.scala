@@ -113,9 +113,18 @@ object Project {
     //test (MyParsers.statment, "x = 5;")
     //test (MyParsers.atom, "a")
     //test (p01, "fun double(x) = x;")
+
+    //testing: Function Decleration with assignment statement(s).
     test (p01, "fun max(q) = (q:= 0;)")
     test (p01, "fun double(x,y,z) = (x := 2;)")
-    test (p01, "fun foo(a,b) = (while (x) do (a := 9; b := 100;);)")
+    //testing: Function Decleration with assignment and while-loop statement(s).
+    test (p01, """fun foo(a,b) = (
+                    while (x) do (
+                      a := 9; 
+                      b := 100;
+                    );
+                  )"""
+          )
 
     println ("=" * 80)
   }
