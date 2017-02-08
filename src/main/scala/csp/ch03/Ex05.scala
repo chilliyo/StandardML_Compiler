@@ -126,6 +126,7 @@ object Ex05 {
     testEval (p01, "if 4 then 2 else 7 fi")
     testEval (p01, "if 1+4*8 then 2*5 else 7+1 fi")
     testEval (p01, "if 15 then 1-2*5 else 8 fi")
+    testEval (p01, "if (let z = (17) in z + 2 * 3 end) then 2+5*7 else 8*1 fi")
     println ("=" * 80)
   }
 }
