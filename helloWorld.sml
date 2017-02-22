@@ -1,6 +1,2 @@
-(* hello.sml *)
-
-fun hello () = 
-    (print "Hello, world!\n")
-
-fun main () = hello()
+fun main () = 
+    print "Hello, world!\n"
