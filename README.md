@@ -1,6 +1,8 @@
 #Student Info
 Qili Sui
+
 Programming language: Standard ML
+
 *****Important Note****** 
 
 (1)Because of the llvm version gcc on mac, I chose to use Linux machine to run my compiler. 
