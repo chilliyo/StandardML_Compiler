@@ -1,116 +1,41 @@
-# Instructions
+#Student Info
+Qili Sui
+Programming language: Standard ML
+*****Important Note****** 
 
-This repository is for CSC348 Winter 2017.
+(1)Because of the llvm version gcc on mac, I chose to use Linux machine to run my compiler. 
+So, the invokeAssemblerLinker() of my compiler doesn't work for llvm gcc on mac.
+Please test and grade my code on a machine that have "real" gcc installed. Thanks much. - Qili
 
-You should check out your personal repository from BitBucket.  Make your changes to the files in
-that repository, commit the changes, and then push back to BitBucket.  The instructor will then be
-able to review your work.
+(2) Test files are in input/smlfunc. input directory is at the top level of the repository.
+    aseembly file and excutables are generated in input/smlfunc.
 
-For all work, you must commit source code that compiles without error.  Submissions where the
-source code does not compile will receive 0 points.  If source code compiles correctly, partial
-credit may be given for assignments where some of the tests fail.  For Scala assignments, you can
-confirm that your source code compiles correctly by running the following command in your repository
-directory:
+********END OF NOTE******
 
-    sbt compile
 
-# Software Requirements
 
-You will need to install:
+#What is working:
+1.Implemented succesfully - print the numbers between 1 and 100(test02.sml, test02.s, test02)
+2.Implemented succesfully - calculate and print the factorial of numbers between 1 and 100(test01.sml, test01.s, test01)
+3.Implemented successfuly - Implement literal strings that can be printed directly but not used within expressions.(test04.sml, test04.s, test04)
+4.Implemented succesfully - Implement function/method/procedure calls for your programming language(See test01.sml - Recursively Call Function Factorial())
 
-- Java SE 8 http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-- Scala Build Tool (SBT) http://www.scala-sbt.org/download.html
 
-# Scala Build Tool (SBT)
+#What is not working:
+1.Implemented partially - (test03.sml, test03.s, test03)print the numbers (in order) between 1 and 100 that are divisible by neither 3 nor 5
+        
+        working part:  
 
-The Scala Build Tool (SBT http://www.scala-sbt.org/) is used to compile and test the Scala
-assignments.  Files must **NOT** be renamed or refactored, and the test code and build instruction
-files must **NOT** be altered.  Specifically, you should only edit files under `src/main/`.
+        (1)The abstract syntax tree for % (modulo) 
 
-SBT will take care of downloading the correct version of Scala for you.  You will need to be
-connected to the Internet when you do this.
+            Successfully parsed file "./input/smlfunc/test03.sml".
+            Result is Program(List(Function(mod,List(n),Block(List(If(Prim(=,Prim(%,Var(n),CstI(3)),CstI(0)),Block(List(Return(Var(n)))),Block(List(Return(CstI(0))))))))),Block(List(Asgn(i,CstI(1)), While(Prim(<,Var(i),CstI(101)),Block(List(Block(List(Print(Call(mod,List(Var(i)))))), Asgn(i,Prim(+,Var(i),CstI(1))))))))).
+            Index is 565.
+            Variables: i -> (i), n -> (n)
+            Compiling:
+            Wrote to ./input/smlfunc/test03.s
+            Running assembler: 
+        (2) Code generation partially working. See test03.s file.
 
-## Launch SBT
-
-From a shell window (Linux or OS X) or CMD/Powershell prompt (Windows), launch SBT using the command
-you set up during SBT installation.  This is usually just `sbt`.  For example:
-
-    $ sbt
-    [info] Loading project definition from /csc348/main/project
-    [info] Set current project to CSC348 Assignments (in build file:/csc348/main/)
-    >
-    
-NOTE: you **must** be in the directory that contains the file `build.sbt` and has the directory `src` when you run the `sbt` command.  Use `cd` to change to that directory if necessary.  The `build.sbt` file contains instructions for building and testing the project.  It will compile code into a new `target` subdirectory. 
-
-## Launch Scala Console from SBT
-
-To launch the Scala console from the SBT console, run:
-
-    console
-
-To exit the Scala console and return to the SBT console, enter:
-
-    :quit
-
-You will have access to your source code files in the Scala console.
-
-Note: if you paste into the Scala console, the parser looks for the smallest syntactically correct
-expression, and this may not be what you want.  If this becomes problematic, you should either put
-curly braces around the body of functions when pasting (this has been done for you already in the
-homework assignments), or to investigate the `:paste` command in the Scala interpreter, i.e., type
-`:paste`, then paste code in.
-
-## Compiling with SBT
-
-To compile the Scala source code with SBT, run:
-
-    compile
-    
-To continuously compile, run:
-
-    ~compile
-    
-For the assignments, you may prefer to simply run the tests as you go.  However, for tricky
-exercises, you may wish to edit source code, compile it from the SBT console, and try it out in the
-Scala console.
-
-## Testing with SBT
-
-From the SBT console, you can run various commands to compile and run the tests under `src/test`.
-
-When you ask SBT to run any tests, it will automatically compile your source code and the test code
-first (if it does not appear to do so, ensure that you have saved your source code file in your text
-editor!).
-
-To run all tests from the SBT console:
-
-    test
-    
-## Offline Work with SBT
-
-You need to have Internet connectivity when you initially ask SBT to compile and test in order to download to libraries.
-
-To work offline in SBT once you have the dependencies, run the following command in the SBT console:
-
-    set offline := true
-    
-# Text Editor
-
-You should edit source code files with a text editor or IDE.  If you are using Notepad,
-Write/Wordpad, or Word to edit code, stop now!
-
-You might consider: 
-
-- http://www.sublimetext.com/ (OS X, Windows, Linux)
-- http://notepad-plus-plus.org/ (Windows)
-
-If you want to go old school:
-
-- Emacs
-- VIM
-
-Local Variables:
-mode: markdown
-fill-column: 100
-End:
+2.Impelmention Failed - allocated in the activation record / stack frame
