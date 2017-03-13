@@ -16,8 +16,11 @@ Please test and grade my code on a machine that have "real" gcc installed. Thank
 
 #What is working:
 1.Implemented succesfully - print the numbers between 1 and 100(test02.sml, test02.s, test02)
+
 2.Implemented succesfully - calculate and print the factorial of numbers between 1 and 100(test01.sml, test01.s, test01)
+
 3.Implemented successfuly - Implement literal strings that can be printed directly but not used within expressions.(test04.sml, test04.s, test04)
+
 4.Implemented succesfully - Implement function/method/procedure calls for your programming language(See test01.sml - Recursively Call Function Factorial())
 
 
