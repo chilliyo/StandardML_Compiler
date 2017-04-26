@@ -1,9 +1,4 @@
-// START OF HEADER
-	.section .rodata
-.output:
-	.string "%d\n"
-// END OF HEADER
-	.text
+ 	.text
 	.globl	main
 	.type	main, @function
 main:
@@ -55,7 +50,7 @@ lab009:
 mod:
 	pushq	%rbp
 	movq	%rsp, %rbp
-// ((n % 3) = 0)
+// ((n % 3) < 1)
 	pushq	16(%rbp)
 	pushq	$3
 	popq	%rbx
@@ -63,11 +58,11 @@ mod:
 	movq	$0, %rdx
 	idivq	%rbx
 	pushq	%rax
-	pushq	$0
+	pushq	$1
 	popq	%rbx
 	popq	%rax
 	cmpq	%rbx, %rax
-	sete	%al
+	sets	%al
 	movzbl	%al, %eax
 	pushq	%rax
 	popq	%rax
@@ -90,6 +85,36 @@ lab011:
 lab012:
 	popq	%rbp
 	ret
+
+	.text
+	.globl	print_string
+	.type	print_string, @function
+print_string:
+.LFB0:
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	$16, %rsp
+	movq	%rdi, -8(%rbp)
+	jmp	.L2
+.L3:
+	movq	-8(%rbp), %rax
+	movq	(%rax), %rax
+	movsbl	%al, %eax
+	movl	%eax, %edi
+	call	putchar
+	addq	$8, -8(%rbp)
+.L2:
+	movq	-8(%rbp), %rax
+	movq	(%rax), %rax
+	testq	%rax, %rax
+	jne	.L3
+	leave
+	ret
+
+	.section .rodata
+.output:
+	.string "%d\n"
+
 	.globl	i
 	.data
 	.align	8

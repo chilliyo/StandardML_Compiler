@@ -11,9 +11,11 @@ object Project {
   sealed trait Expr
   case class CstI (n : Int)                           extends Expr
   case class Var (nm : String)                        extends Expr
-  //case class Let (nm : String, e1 : Expr, e2 : Expr)  extends Expr
   case class Prim (nm : String, e1 : Expr, e2 : Expr) extends Expr
   case class Call (nm : String, es : List[Expr])      extends Expr
+  case class NewArray (sz : Expr)                         extends Expr
+  case class ReadElt (arr : Expr, idx : Expr)            extends Expr
+  case class WriteElt (arr : Expr, idx : Expr, e : Expr) extends Expr
   
   sealed trait Stmt
   case class Asgn (nm : String, e : Expr)                                     extends Stmt
@@ -22,11 +24,8 @@ object Project {
   case class For (nm : String, low : Expr, high : Expr, s : Stmt)             extends Stmt
   case class While (e : Expr, s : Stmt)                                       extends Stmt
   case class Return (e : Expr)                                                extends Stmt
-  case class PrintString (s : String)                                         extends Stmt
+  case class PrintString (arr : Expr)                                         extends Stmt
   case class Print (e : Expr)                                                 extends Stmt
-  //case class Function (nm1 : String, nm2 : String, e: Expr, ss : List[Stmt])  extends Stmt
-  //case class RecursiveCall(e1: Expr, e2: Expr)                                extends Stmt
-
   case class Function(nm : String, params : List[String], body : Stmt)
   case class Program(funs: List[Function], main: Stmt)
 
@@ -51,7 +50,7 @@ object Project {
          CharIn (' ' to '!') | CharIn('#' to '~')
          ).rep ().! ~ "\"" 
     )
-    val keywords : List[String] = List ("print_literal_string","return", "main","let", "in", "end", "val", "if", "then","else", "while", "do", "for", "print","fun", "to")
+    val keywords : List[String] = List ("newarray", "wirte", "read","printstring", "return", "main","let", "in", "end", "val", "if", "then","else", "while", "do", "for", "print","fun", "to")
     val alpha : Parser[String] = P ((CharIn ('A' to 'Z') | CharIn ('a' to 'z')).!)
     val ident : Parser[String] = P ((alpha ~ (alpha | CharIn ('0' to '9')).rep (0)).!).filter (s => !keywords.contains (s))
     val variable : Parser[Expr] = ident.map (s => Var (s))
@@ -74,6 +73,9 @@ object Project {
         case (nm, None)      => Var (nm)
         case (nm, Some (es)) => Call (nm, es)
       } | 
+      ("newarray" ~ "(" ~/ expr ~ ")").map (e => NewArray (e)) |
+      ("read" ~ "(" ~/ expr ~ "," ~ expr  ~ ")").map { case (arr, idx) => ReadElt (arr, idx) } |
+      ("write" ~ "(" ~/ expr ~ "," ~ expr ~ "," ~ expr  ~ ")").map { case (arr, idx, e) => WriteElt (arr, idx, e) } |
       ("(" ~/ expr ~ ")") 
     )
 
@@ -104,9 +106,7 @@ object Project {
       ("for" ~ "(" ~ ident ~ ":=" ~ expr ~ "to" ~ expr ~ ")" ~ stmt).map { case (nm, e1, e2, s) => For (nm, e1, e2, s) } |
       ("while" ~  expr ~ "do" ~ stmt).map { case (e, s) => While (e, s) } |
       ("print" ~ "(" ~ expr ~ ")" ~ ";").map { case (e) => Print (e) } |
-      ("print_literal_string" ~ "(" ~ literal_string ~ ")" ~ ";").map { case (s) => PrintString (s) } |
-      //("fun" ~ ident ~ "(" ~ ident ~ typeParser ~ ")" ~ "="  ~ stmt.rep ).map {case (nm1, nm2, e, ss) => Function(nm1, nm2, e, ss.toList) } |
-      //(multDiv ~ "(" ~ addSub ~ ")" ).map {case (e1, e2) => RecursiveCall(e1, e2) }|
+      ("printstring" ~ "(" ~ expr ~ ")" ~ ";").map { case (e) => PrintString (e) } |
       ("return" ~ expr ~ ";").map { case (e) => Return (e) }
     )
 
@@ -123,62 +123,7 @@ object Project {
 
 
     val start : Parser[Program] = P (program ~ End)
-    // val atom : Parser[Unit] = P (integer.map(s => ()) | variable.map(s => ()))
-
-    // val assignStatment: Parser[Unit] = P(ident.map(s =>()) ~ ":=" ~ integer.map (n => ()) ~ ";")
-
-    // val assignStatments: Parser[Unit] = P(assignStatment.rep)
-
-    // val whileStatment: P[Unit] = 
-    //   P ("while" ~ "(" ~ ident.map(s=> ()) ~ ")" ~ "do" ~ "(" ~ assignStatments ~ ")" ~ ";")
-
-    // val printStatement: P[Unit] = 
-    //   P ("print" ~ "(" ~ "'" ~ alpha ~ " ".? ~ alpha ~  ")")
-
-    // val statments: P[Unit] = 
-    //   P (
-    //     assignStatment |
-    //     whileStatment
-    //     )
-
-    // val parameter : P[Unit] = P (ident.map(s => ()))
-
-    // val parameters: P[Unit] = P ( (parameter ~ ",").rep ~ parameter)
-
-    // val functionDec : P[Unit] = 
-    //   P ("fun" ~ ident.map(s => ()) ~ "(" ~ parameters ~ ")" ~ "=" ~ "(" ~ statments ~ ")")
-
-    // val start : Parser[Unit] = P (functionDec ~ End)
   }
-
- 
-//   def lookup (env : List[(String, Int)], x : String) : Int = {
-//     env match {
-//       case Nil         => throw new RuntimeException (x + " not found")
-//       case (y, v) :: r => if (x == y) v else lookup (r, x)
-//     }
-//   }
-
-//   def eval (e : Expr, env : List[(String, Int)]) : Int = {
-//     e match {
-//       case CstI (i)           => i
-//       case Var (x)            => lookup (env, x)
-//       case Let (x, erhs, ebody) => {
-//         val xval : Int = eval (erhs, env)
-//         val env1 : List[(String, Int)] = (x, xval) :: env 
-//         eval (ebody, env1)
-//       }
-//       case Prim ("+", e1, e2) => eval (e1, env) + eval (e2, env)
-//       case Prim ("*", e1, e2) => eval (e1, env) * eval (e2, env)
-//       case Prim ("-", e1, e2) => eval (e1, env) - eval (e2, env)
-// //      case If (e1, e2, e3)  => if (eval (e1,env) != 0)  eval(e2,env)
-// //                  else eval (e3,env)
-//       case Prim (  _,  _,  _) => throw new RuntimeException ("unknown primitive")
-
-//     }
-//   }
-
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Pretty printing
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,6 +134,9 @@ object Project {
       case Var (x)                      => x
       case Prim (op, e1, e2)            => "(%s %s %s)".format (ppExpr (e1), op, ppExpr (e2))
       case Call (nm, es)                => "(%s (%s))".format (nm, es.map (ppExpr).mkString (", "))
+      case NewArray (sz)                => "(newarray (%s))".format (ppExpr (sz))
+      case ReadElt (arr, idx)           => "(read (%s, %s))".format (ppExpr (arr), ppExpr (idx))
+      case WriteElt (arr, idx, e)       => "(write (%s, %s, %s))".format (ppExpr (arr), ppExpr (idx), ppExpr (e))
     }
   }
 
@@ -225,8 +173,8 @@ object Project {
         "%swhile %s do (\n%s%s)\n".format (indent, ppExpr (e), ppBlock (indent, s), indent)
       case Print (e)              => 
         "%sprint (%s);\n".format (indent, ppExpr (e))
-        case PrintString (s)              => 
-        "%sprint_literal_string (%s);\n".format (indent, s)
+        case PrintString (e)              => 
+        "%sprintstring (%s);\n".format (indent, ppExpr (e))
         case Return (e)             => 
         "%sreturn (%s);\n".format (indent, ppExpr (e))
     }
@@ -301,6 +249,31 @@ object Project {
         "\taddq\t$%d, %%rsp\n".format (es.length * 8) +
         "\tpushq\t%rax\n"
       }
+      case NewArray (sz) => {
+        compileExpr (sz, env, fenv) +
+        "\tpopq\t%rdi\n" +
+        "\timulq\t$8, %rdi\n" +
+        "\tcall\tmalloc\n" +
+        "\tpushq\t%rax\n"
+      }
+      case ReadElt (arr, idx) => {
+        compileExpr (arr, env, fenv) +
+        compileExpr (idx, env, fenv) +
+        "\tpopq\t%rbx\n" +
+        "\tpopq\t%rax\n" +
+        "\tmovq\t(%rax,%rbx,8), %rax\n" +
+        "\tpushq\t%rax\n"
+      }
+      case WriteElt (arr, idx, e) => {
+        compileExpr (arr, env, fenv) +
+        compileExpr (idx, env, fenv) +
+        compileExpr (e, env, fenv) +
+        "\tpopq\t%rcx\n" +
+        "\tpopq\t%rbx\n" +
+        "\tpopq\t%rax\n" +
+        "\tmovq\t%rcx, (%rax,%rbx,8)\n" +
+        "\tpushq\t$0\n"
+      }
     }
   }
 
@@ -313,14 +286,43 @@ object Project {
   }
 
   def header () : String = {
-    "// START OF HEADER\n" +
+    " "
+  }
+
+  def print_string () : String = {
+    "\t.text\n" +
+    "\t.globl\tprint_string\n" +
+    "\t.type\tprint_string, @function\n" +
+    "print_string:\n" +
+    ".LFB0:\n" +
+    "\tpushq\t%rbp\n" +
+    "\tmovq\t%rsp, %rbp\n" +
+    "\tsubq\t$16, %rsp\n" +
+    "\tmovq\t%rdi, -8(%rbp)\n" +
+    "\tjmp\t.L2\n" +
+    ".L3:\n" +
+    "\tmovq\t-8(%rbp), %rax\n" +
+    "\tmovq\t(%rax), %rax\n" +
+    "\tmovsbl\t%al, %eax\n" +
+    "\tmovl\t%eax, %edi\n" +
+    "\tcall\tputchar\n" +
+    "\taddq\t$8, -8(%rbp)\n" +
+    ".L2:\n" +
+    "\tmovq\t-8(%rbp), %rax\n" +
+    "\tmovq\t(%rax), %rax\n" +
+    "\ttestq\t%rax, %rax\n" +
+    "\tjne\t.L3\n" +
+    "\tleave\n" +
+    "\tret\n"
+  }
+  def footer (env : Env) : String = {
+    "\n" +
+    print_string () +
+    "\n" +
     "\t.section .rodata\n" + 
     ".output:\n" + 
     "\t.string \"%d\\n\"\n" +
-    "// END OF HEADER\n"
-  }
-
-  def footer (env : Env) : String = {
+    "\n" +
     (for ((nm1, _) <- env) yield {
       "\t.globl\t%s\n".format (nm1) +
       "\t.data\n".format (nm1) +
@@ -432,16 +434,14 @@ object Project {
         "\tmovl\t$0, %eax\n" +
         "\tcall\tprintf\n"
       }
-      case PrintString (ls)         => {
-        val label = newLabel ()
+      case PrintString (e)               => {
         ppStmt ("// ", s) + 
-        "\t.section\t.rodata\n" +
-        "%s:\n".format (label) +
-        "\t.string\t\"%s\"\n".format(ls) +
-        "\t.text\n" +
-        "\tmovl\t$%s, %%edi\n".format (label) +
-        "\tcall\tputs\n"
+        compileExpr (e, env, fenv) +
+        "\tpopq\t%rdi\n" +
+        "\tcall\tprint_string\n"
       }
+
+
       case Return (e)               => {
         ppStmt ("// ", s) + 
         compileExpr (e, env, fenv) +
@@ -458,6 +458,9 @@ object Project {
       case Var (x)            => List (x)
       case Prim (op, e1, e2)  => findVarsExpr (e1) ::: findVarsExpr (e2)
       case Call (nm, es)      => es.flatMap (findVarsExpr)
+      case NewArray (sz)          => findVarsExpr (sz)
+      case ReadElt (arr, idx)     => findVarsExpr (arr) ::: findVarsExpr (idx) 
+      case WriteElt (arr, idx, e) => findVarsExpr (arr) ::: findVarsExpr (idx) ::: findVarsExpr (e) 
     }
   }
 
@@ -483,8 +486,8 @@ object Project {
       case Print (e)               => {
         findVarsExpr (e)
       }
-      case PrintString (s)         => {
-        List()
+      case PrintString (e)         => {
+        findVarsExpr (e)
       }
       case Return (e)              => {
         findVarsExpr (e)
@@ -580,7 +583,7 @@ object Project {
     fw.write (asm)
     fw.close
     println ("Wrote to %s".format (asmFilename))
-    invokeAssemblerLinker (asmFilename)
+    //invokeAssemblerLinker (asmFilename)
     // println (asm)
   }
 

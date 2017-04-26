@@ -1,9 +1,4 @@
-// START OF HEADER
-	.section .rodata
-.output:
-	.string "%d\n"
-// END OF HEADER
-	.text
+ 	.text
 	.globl	main
 	.type	main, @function
 main:
@@ -54,6 +49,36 @@ numbers:
 	movq	%rsp, %rbp
 	popq	%rbp
 	ret
+
+	.text
+	.globl	print_string
+	.type	print_string, @function
+print_string:
+.LFB0:
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	$16, %rsp
+	movq	%rdi, -8(%rbp)
+	jmp	.L2
+.L3:
+	movq	-8(%rbp), %rax
+	movq	(%rax), %rax
+	movsbl	%al, %eax
+	movl	%eax, %edi
+	call	putchar
+	addq	$8, -8(%rbp)
+.L2:
+	movq	-8(%rbp), %rax
+	movq	(%rax), %rax
+	testq	%rax, %rax
+	jne	.L3
+	leave
+	ret
+
+	.section .rodata
+.output:
+	.string "%d\n"
+
 	.globl	i
 	.data
 	.align	8

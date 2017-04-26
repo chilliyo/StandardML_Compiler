@@ -41,6 +41,6 @@ Please test and grade my code on a machine that have "real" gcc installed. Thank
             Compiling:
             Wrote to ./input/smlfunc/test03.s
             Running assembler: 
-        (2) Code generation partially working. See test03.s file.
+        (2) Code generation partially working. Run the compiler and see the produced test03.s
 
 2.Impelmention Failed - allocated in the activation record / stack frame

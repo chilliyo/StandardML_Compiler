@@ -1,8 +1,13 @@
 fun hello(n) = (
-                                        
+
                                 )
 
-fun main() = (
-    (print_literal_string("Hello World");)
-    (print_literal_string("Printing From a second print_literal_string()");)
+                                     fun main() = (
+                                          a := newarray (10);
+                                          for (i := 0 to 25)(
+                                          (dummy := write (a,0,i+65);)
+                                          (dummy := write(a,1,10);)
+                                          (printstring (a);)
+                                          i := i+1;
+                                          )
                                 )

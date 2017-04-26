@@ -1,5 +1,6 @@
 fun mod(n) = (
-                                        if (n%3=0)
+
+                                        if (n%3<1)
                                         then (return n;)
                                         else (return 0;);
                                 )
